@@ -20,6 +20,7 @@ class TestPacket(TestCase):
         self.assertEqual(TelemetryPacket, p.__class__)
         self.assertEqual(1122, p.buildVersion)
         self.assertEqual(0, p.packetType)
+        self.assertEqual(0, p.sequenceNumber)
         self.assertEqual(SessionState.FORMATION_LAP, p.sessionState)
         self.assertEqual(GameState.INGAME_PLAYING, p.gameState)
         self.assertEqual(0, p.getValue("viewedParticipantIndex"))

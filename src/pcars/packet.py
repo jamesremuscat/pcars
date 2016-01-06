@@ -24,7 +24,7 @@ class Packet(object):
     def readFrom(buf):
         header = Packet.HEADER.read_dict(buf)
         buildVersion = header['buildVersion']
-        sequenceNumber = header['seq_packet'] & 0xFC
+        sequenceNumber = (header['seq_packet'] & 0xFC) >> 2
         packetType = header['seq_packet'] & 0x3
         pClass = PACKET_TYPES.get(packetType, Packet)
         return pClass(buildVersion, sequenceNumber, packetType, buf)
