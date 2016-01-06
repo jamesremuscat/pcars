@@ -125,13 +125,8 @@ class TelemetryPacket(Packet):
     def sessionState(self):
         return SessionState((self.data["gameSessionState"] & 0x38) >> 2)
 
-    @property
-    def viewedParticipantIndex(self):
-        return self.data["viewedParticipantIndex"]
-
-    @property
-    def numParticipants(self):
-        return self.data["numParticipants"]
+    def getValue(self, key):
+        return self.data[key]
 
 PACKET_TYPES = {
     0: TelemetryPacket
