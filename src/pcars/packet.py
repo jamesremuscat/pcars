@@ -125,6 +125,14 @@ class TelemetryPacket(Packet):
     def sessionState(self):
         return SessionState((self.data["gameSessionState"] & 0x38) >> 2)
 
+    @property
+    def currentGear(self):
+        return self.data['gearNumGears'] & 0x0F
+
+    @property
+    def numGears(self):
+        return (self.data['gearNumGears'] & 0xF0) >> 4
+
     def getValue(self, key):
         return self.data[key]
 

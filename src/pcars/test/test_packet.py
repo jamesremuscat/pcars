@@ -25,3 +25,6 @@ class TestPacket(TestCase):
         self.assertEqual(GameState.INGAME_PLAYING, p.gameState)
         self.assertEqual(0, p.getValue("viewedParticipantIndex"))
         self.assertEqual(21, p.getValue("numParticipants"))
+
+        self.assertEqual(0, p.currentGear)
+        self.assertEqual(6, p.numGears)
