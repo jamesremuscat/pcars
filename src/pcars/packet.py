@@ -1,5 +1,5 @@
+from pcars.enums import GameState, SessionState
 import binio
-from pcars.enums import GameSessionState
 
 
 PACKET_HEADER = [
@@ -118,8 +118,12 @@ class TelemetryPacket(Packet):
     ])
 
     @property
-    def gameSessionState(self):
-        return GameSessionState(self.data["gameSessionState"] & 0x0F)
+    def gameState(self):
+        return GameState(self.data["gameSessionState"] & 0x07)
+
+    @property
+    def sessionState(self):
+        return SessionState((self.data["gameSessionState"] & 0x38) >> 2)
 
     @property
     def viewedParticipantIndex(self):
