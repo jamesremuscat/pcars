@@ -117,15 +117,21 @@ class TelemetryPacket(Packet):
         (1, binio.types.t_float32, "extentsCentreZ"),
     ])
 
+    TYRES_STRUCTURE = [  # This is a list of binio typedefs - each is repeated for each tyre before the next.
+        (1, binio.types.t_u8, "tyreFlags"),
+    ]
+
     def __init__(self, buildVersion, sequenceNumber, packetType, buf):
         super(TelemetryPacket, self).__init__(buildVersion, sequenceNumber, packetType, buf)  # everything up to tyre information
         self.tyres = [{}, {}, {}, {}]
-        self.forEachTyre(binio.types.t_u8, "tyreFlags", buf)
 
-    def forEachTyre(self, ttype, label, buf):
-        thisField = binio.new([(1, ttype, label)])
+        for datapoint in TelemetryPacket.TYRES_STRUCTURE:
+            self.forEachTyre(datapoint, buf)
+
+    def forEachTyre(self, datapoint, buf):
+        thisField = binio.new([datapoint])
         for i in Tyres:
-            self.tyres[i.value][label] = thisField.read_dict(buf)[label]
+            self.tyres[i.value][datapoint[2]] = thisField.read_dict(buf)[datapoint[2]]
 
     @property
     def gameState(self):
