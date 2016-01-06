@@ -27,7 +27,7 @@ setup(
       """,
     setup_requires=["nose>=1.0"],
     tests_require=[],
-    install_requires=[],
+    install_requires=['binio'],
     entry_points={
         'console_scripts': [
             ],

@@ -1,4 +1,10 @@
-import struct
+import binio
+
+
+PACKET_HEADER = [
+    (1, binio.types.t_u16, "buildVersion"),
+    (1, binio.types.t_u8, "seq_packet"),
+]
 
 
 class Packet(object):
@@ -10,9 +16,9 @@ class Packet(object):
 
     @staticmethod
     def readFrom(buf):
-        buildVersion, packetType = struct.unpack_from('HB', buf)
+        header = binio.new(PACKET_HEADER).read_dict(buf)
         p = Packet()
-        p.buildVersion = buildVersion
-        p.sequenceNumber = packetType & 0xFC
-        p.packetType = packetType & 0x3
+        p.buildVersion = header['buildVersion']
+        p.sequenceNumber = header['seq_packet'] & 0xFC
+        p.packetType = header['seq_packet'] & 0x3
         return p
