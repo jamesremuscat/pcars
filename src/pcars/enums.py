@@ -1,4 +1,4 @@
-from enum import Enum
+from enum import Enum, IntEnum
 
 
 class SessionState(Enum):
@@ -23,3 +23,9 @@ class Tyres(Enum):
     FRONT_RIGHT = 1
     REAR_LEFT = 2
     REAR_RIGHT = 3
+
+
+class TyreFlags(IntEnum):
+    ATTACHED = 1
+    INFLATED = 2
+    IS_ON_GROUND = 4

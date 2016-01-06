@@ -1,4 +1,4 @@
-from pcars.enums import GameState, SessionState
+from pcars.enums import GameState, SessionState, TyreFlags
 from pcars.packet import Packet, TelemetryPacket
 from StringIO import StringIO
 from unittest import TestCase
@@ -28,3 +28,7 @@ class TestPacket(TestCase):
 
         self.assertEqual(0, p.currentGear)
         self.assertEqual(6, p.numGears)
+
+        print p.tyres
+
+        self.assertEqual(TyreFlags.ATTACHED + TyreFlags.INFLATED + TyreFlags.IS_ON_GROUND, p.tyres[0]["tyreFlags"])

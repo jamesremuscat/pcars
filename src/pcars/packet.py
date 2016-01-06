@@ -1,4 +1,4 @@
-from pcars.enums import GameState, SessionState
+from pcars.enums import GameState, SessionState, Tyres
 import binio
 
 
@@ -116,6 +116,16 @@ class TelemetryPacket(Packet):
         (1, binio.types.t_float32, "extentsCentreY"),
         (1, binio.types.t_float32, "extentsCentreZ"),
     ])
+
+    def __init__(self, buildVersion, sequenceNumber, packetType, buf):
+        super(TelemetryPacket, self).__init__(buildVersion, sequenceNumber, packetType, buf)  # everything up to tyre information
+        self.tyres = [{}, {}, {}, {}]
+        self.forEachTyre(binio.types.t_u8, "tyreFlags", buf)
+
+    def forEachTyre(self, ttype, label, buf):
+        thisField = binio.new([(1, ttype, label)])
+        for i in Tyres:
+            self.tyres[i.value][label] = thisField.read_dict(buf)[label]
 
     @property
     def gameState(self):
