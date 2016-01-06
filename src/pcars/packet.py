@@ -9,6 +9,8 @@ PACKET_HEADER = [
 
 class Packet(object):
 
+    HEADER = binio.new(PACKET_HEADER)
+
     def __init__(self):
         self.buildVersion = -1
         self.sequenceNumber = -1
@@ -16,7 +18,7 @@ class Packet(object):
 
     @staticmethod
     def readFrom(buf):
-        header = binio.new(PACKET_HEADER).read_dict(buf)
+        header = Packet.HEADER.read_dict(buf)
         p = Packet()
         p.buildVersion = header['buildVersion']
         p.sequenceNumber = header['seq_packet'] & 0xFC
