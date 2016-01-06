@@ -2,13 +2,13 @@ from enum import Enum
 
 
 class SessionState(Enum):
-    SESSION_INVALID = 0
-    SESSION_PRACTICE = 1
-    SESSION_TEST = 2
-    SESSION_QUALIFY = 3
-    SESSION_FORMATION_LAP = 4
-    SESSION_RACE = 5
-    SESSION_TIME_ATTACK = 6
+    INVALID = 0
+    PRACTICE = 1
+    TEST = 2
+    QUALIFY = 3
+    FORMATION_LAP = 4
+    RACE = 5
+    TIME_ATTACK = 6
 
 
 class GameState(Enum):
