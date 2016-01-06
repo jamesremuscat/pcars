@@ -1,4 +1,4 @@
-from pcars.packet import Packet
+from pcars.packet import Packet, TelemetryPacket
 from StringIO import StringIO
 from unittest import TestCase
 import os
@@ -16,5 +16,7 @@ class TestPacket(TestCase):
     def testParseSamplePacket0(self):
         f = open(os.path.join(__location__, "packet_0.bin"), 'rb')
         p = Packet.readFrom(f)
+        self.assertEqual(TelemetryPacket, p.__class__)
         self.assertEqual(1122, p.buildVersion)
         self.assertEqual(0, p.packetType)
+        self.assertEqual(2, p.gameSessionState)
