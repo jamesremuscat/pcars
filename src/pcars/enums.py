@@ -9,4 +9,10 @@ class GameSessionState(Enum):
     SESSION_FORMATION_LAP = 4
     SESSION_RACE = 5
     SESSION_TIME_ATTACK = 6
-    SESSION_MAX = 7
+
+
+class Tyres(Enum):
+    FRONT_LEFT = 0
+    FRONT_RIGHT = 1
+    REAR_LEFT = 2
+    REAR_RIGHT = 3
