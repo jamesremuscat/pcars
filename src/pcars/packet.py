@@ -1,4 +1,5 @@
 import binio
+from pcars.enums import GameSessionState
 
 
 PACKET_HEADER = [
@@ -15,6 +16,7 @@ class Packet(object):
         self.buildVersion = buildVersion
         self.sequenceNumber = sequenceNumber
         self.packetType = packetType
+        self.data = {}
         if hasattr(self.__class__, "STRUCTURE"):
             self.data = self.__class__.STRUCTURE.read_dict(buf)
 
@@ -32,11 +34,21 @@ class TelemetryPacket(Packet):
 
     STRUCTURE = binio.new([
         (1, binio.types.t_u8, "gameSessionState"),
+        (1, binio.types.t_int8, "viewedParticipantIndex"),
+        (1, binio.types.t_int8, "numParticipants"),
     ])
 
     @property
     def gameSessionState(self):
-        return self.data["gameSessionState"] & 0x0F
+        return GameSessionState(self.data["gameSessionState"] & 0x0F)
+
+    @property
+    def viewedParticipantIndex(self):
+        return self.data["viewedParticipantIndex"]
+
+    @property
+    def numParticipants(self):
+        return self.data["numParticipants"]
 
 PACKET_TYPES = {
     0: TelemetryPacket

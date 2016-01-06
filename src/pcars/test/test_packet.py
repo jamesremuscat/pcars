@@ -2,6 +2,7 @@ from pcars.packet import Packet, TelemetryPacket
 from StringIO import StringIO
 from unittest import TestCase
 import os
+from pcars.enums import GameSessionState
 
 __location__ = os.path.realpath(os.path.join(os.getcwd(), os.path.dirname(__file__)))
 
@@ -19,4 +20,6 @@ class TestPacket(TestCase):
         self.assertEqual(TelemetryPacket, p.__class__)
         self.assertEqual(1122, p.buildVersion)
         self.assertEqual(0, p.packetType)
-        self.assertEqual(2, p.gameSessionState)
+        self.assertEqual(GameSessionState.SESSION_TEST, p.gameSessionState)
+        self.assertEqual(0, p.viewedParticipantIndex)
+        self.assertEqual(21, p.numParticipants)
