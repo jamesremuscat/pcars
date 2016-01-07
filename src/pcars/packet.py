@@ -117,8 +117,30 @@ class TelemetryPacket(Packet):
         (1, binio.types.t_float32, "extentsCentreZ"),
     ])
 
-    TYRES_STRUCTURE = [  # This is a list of binio typedefs - each is repeated for each tyre before the next.
+    TYRES_STRUCTURE = [  # This is a list of binio typedefs - each is repeated for each wheel before the next typedef.
         (1, binio.types.t_u8, "tyreFlags"),
+        (1, binio.types.t_u8, "terrain"),
+        (1, binio.types.t_float32, "tyreY"),
+        (1, binio.types.t_float32, "tyreRPS"),
+        (1, binio.types.t_float32, "tyreSlipSpeed"),
+        (1, binio.types.t_u8, "tyreTemp"),
+        (1, binio.types.t_u8, "tyreGrip"),
+        (1, binio.types.t_float32, "tyreHeightAboveGround"),
+        (1, binio.types.t_float32, "tyreLateralStiffness"),
+        (1, binio.types.t_u8, "tyreWear"),
+        (1, binio.types.t_u8, "brakeDamage"),
+        (1, binio.types.t_u8, "suspensionDamage"),
+        (1, binio.types.t_int16, "brakeTempCelsius"),
+        (1, binio.types.t_u16, "tyreTreadTemp"),
+        (1, binio.types.t_u16, "tyreLayerTemp"),
+        (1, binio.types.t_u16, "tyreCarcassTemp"),
+        (1, binio.types.t_u16, "tyreRimTemp"),
+        (1, binio.types.t_u16, "tyreInternalAirTemp"),
+        (1, binio.types.t_float32, "wheelLocalPositionY"),
+        (1, binio.types.t_float32, "rideHeight"),
+        (1, binio.types.t_float32, "suspensionTravel"),
+        (1, binio.types.t_float32, "suspensionVelocity"),
+        (1, binio.types.t_u16, "airPressure"),
     ]
 
     def __init__(self, buildVersion, sequenceNumber, packetType, buf):
