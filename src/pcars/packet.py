@@ -168,6 +168,14 @@ class TelemetryPacket(Packet):
         (1, binio.types.t_float32, "lastSectorTime"),
     ])
 
+    EPILOGUE_STRUCTURE = binio.new([
+        (1, binio.types.t_float32, "trackLength"),
+        (1, binio.types.t_u8, "wings1"),
+        (1, binio.types.t_u8, "wings2"),
+        (1, binio.types.t_u8, "dPad"),
+        #(1, binio.types.t_u16, "padding")
+    ])
+
     def __init__(self, buildVersion, sequenceNumber, packetType, buf):
         super(TelemetryPacket, self).__init__(buildVersion, sequenceNumber, packetType, buf)  # everything up to tyre information
         self.tyres = [{}, {}, {}, {}]
@@ -191,6 +199,8 @@ class TelemetryPacket(Packet):
             p["sector"] = p["sector"] & 0x07
 
             self.participants.append(p)
+
+        self.data.update(TelemetryPacket.EPILOGUE_STRUCTURE.read_dict(buf))
 
     def forEachTyre(self, datapoint, buf):
         thisField = binio.new([datapoint])

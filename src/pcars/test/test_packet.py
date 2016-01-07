@@ -41,3 +41,5 @@ class TestPacket(TestCase):
         self.assertEqual(1, participant0["racePosition"])
         self.assertEqual(-123.0, participant0["lastSectorTime"])
         self.assertEqual(3, participant0["sector"])
+
+        self.assertAlmostEqual(3890.4072, p.data["trackLength"], 4)
