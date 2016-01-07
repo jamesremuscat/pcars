@@ -60,7 +60,7 @@ class PitSchedule(Enum):
     STOP_GO = 3
 
 
-class CarFLags(Enum):
+class CarFlags(Enum):
     HEADLIGHT = 1
     ENGINE_ACTIVE = 2
     ENGINE_WARNING = 4
