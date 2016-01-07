@@ -1,4 +1,4 @@
-from pcars.enums import GameState, SessionState, Tyres
+from pcars.enums import GameState, SessionState, RaceState, Tyres, FlagColour, FlagReason
 import binio
 
 
@@ -201,6 +201,15 @@ class TelemetryPacket(Packet):
             self.participants.append(p)
 
         self.data.update(TelemetryPacket.EPILOGUE_STRUCTURE.read_dict(buf))
+
+        # Unpack data
+        self.data["raceState"] = RaceState(self.data["raceStateFlags"] & 0x7)
+        self.data["lapInvalidated"] = (self.data["raceStateFlags"] & 8) > 0
+        self.data["antiLockActive"] = (self.data["raceStateFlags"] & 16) > 0
+        self.data["boostActive"] = (self.data["raceStateFlags"] & 32) > 0
+
+        self.data["highestFlagColour"] = FlagColour(self.data["highestFlag"] & 0x7)
+        self.data["highestFlagReason"] = FlagReason((self.data["highestFlag"] & 0xF0) << 4)
 
     def forEachTyre(self, datapoint, buf):
         thisField = binio.new([datapoint])

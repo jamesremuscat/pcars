@@ -1,4 +1,4 @@
-from pcars.enums import GameState, SessionState, TyreFlags
+from pcars.enums import GameState, SessionState, RaceState, TyreFlags, FlagColour
 from pcars.packet import Packet, TelemetryPacket
 from StringIO import StringIO
 from unittest import TestCase
@@ -43,3 +43,6 @@ class TestPacket(TestCase):
         self.assertEqual(3, participant0["sector"])
 
         self.assertAlmostEqual(3890.4072, p.data["trackLength"], 4)
+
+        self.assertEqual(RaceState.NOT_STARTED, p.data["raceState"])
+        self.assertEqual(FlagColour.NONE, p.data["highestFlagColour"])
