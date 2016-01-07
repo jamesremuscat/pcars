@@ -33,3 +33,5 @@ class TestPacket(TestCase):
         self.assertEqual(0.0, p.tyres[1]["tyreRPS"])  # Hmm, we're stopped in the test data!
         self.assertEqual(729, p.tyres[2]["brakeTempCelsius"])
         self.assertAlmostEqual(0.06453919, p.tyres[3]["rideHeight"], 8)
+
+        self.assertEqual(15, p.data["ambientTemperature"])

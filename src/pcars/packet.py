@@ -143,12 +143,27 @@ class TelemetryPacket(Packet):
         (1, binio.types.t_u16, "airPressure"),
     ]
 
+    EXTRAS_WEATHER_STRUCTURE = binio.new([
+        (1, binio.types.t_float32, "engineSpeed"),
+        (1, binio.types.t_float32, "engineTorque"),
+        (1, binio.types.t_u8, "aeroDamage"),
+        (1, binio.types.t_u8, "engineDamage"),
+        (1, binio.types.t_int8, "ambientTemperature"),
+        (1, binio.types.t_int8, "trackTemperature"),
+        (1, binio.types.t_u8, "rainDensity"),
+        (1, binio.types.t_int8, "windSpeed"),
+        (1, binio.types.t_int8, "windDirectionX"),
+        (1, binio.types.t_int8, "windDirectionY"),
+    ])
+
     def __init__(self, buildVersion, sequenceNumber, packetType, buf):
         super(TelemetryPacket, self).__init__(buildVersion, sequenceNumber, packetType, buf)  # everything up to tyre information
         self.tyres = [{}, {}, {}, {}]
 
         for datapoint in TelemetryPacket.TYRES_STRUCTURE:
             self.forEachTyre(datapoint, buf)
+
+        self.data.update(TelemetryPacket.EXTRAS_WEATHER_STRUCTURE.read_dict(buf))
 
     def forEachTyre(self, datapoint, buf):
         thisField = binio.new([datapoint])
