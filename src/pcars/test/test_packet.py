@@ -35,3 +35,9 @@ class TestPacket(TestCase):
         self.assertAlmostEqual(0.06453919, p.tyres[3]["rideHeight"], 8)
 
         self.assertEqual(15, p.data["ambientTemperature"])
+
+        participant0 = p.participants[0]
+        self.assertEqual(0, participant0["currentLapDistance"])
+        self.assertEqual(1, participant0["racePosition"])
+        self.assertEqual(-123.0, participant0["lastSectorTime"])
+        self.assertEqual(3, participant0["sector"])

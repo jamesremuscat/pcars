@@ -156,6 +156,18 @@ class TelemetryPacket(Packet):
         (1, binio.types.t_int8, "windDirectionY"),
     ])
 
+    PARTICIPANT_INFO_STRUCTURE = binio.new([
+        (1, binio.types.t_int16, "worldPositionX"),
+        (1, binio.types.t_int16, "worldPositionY"),
+        (1, binio.types.t_int16, "worldPositionZ"),
+        (1, binio.types.t_u16, "currentLapDistance"),
+        (1, binio.types.t_u8, "racePosition"),
+        (1, binio.types.t_u8, "lapsCompleted"),
+        (1, binio.types.t_u8, "currentLap"),
+        (1, binio.types.t_u8, "sector"),
+        (1, binio.types.t_float32, "lastSectorTime"),
+    ])
+
     def __init__(self, buildVersion, sequenceNumber, packetType, buf):
         super(TelemetryPacket, self).__init__(buildVersion, sequenceNumber, packetType, buf)  # everything up to tyre information
         self.tyres = [{}, {}, {}, {}]
@@ -164,6 +176,21 @@ class TelemetryPacket(Packet):
             self.forEachTyre(datapoint, buf)
 
         self.data.update(TelemetryPacket.EXTRAS_WEATHER_STRUCTURE.read_dict(buf))
+
+        self.participants = []
+
+        for _ in range(0, 56):
+            p = TelemetryPacket.PARTICIPANT_INFO_STRUCTURE.read_dict(buf)
+            # Unpack some data within
+            p["isActive"] = (p["racePosition"] & 0x80) >> 7
+            p["racePosition"] = p["racePosition"] & 0x7F
+
+            p["lapInvalidated"] = (p["lapsCompleted"] & 0x80) >> 7
+            p["lapsCompleted"] = p["lapsCompleted"] & 0x7F
+
+            p["sector"] = p["sector"] & 0x07
+
+            self.participants.append(p)
 
     def forEachTyre(self, datapoint, buf):
         thisField = binio.new([datapoint])
