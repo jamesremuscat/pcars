@@ -1,4 +1,5 @@
-from pcars.enums import GameState, SessionState, RaceState, Tyres, FlagColour, FlagReason
+from pcars.enums import GameState, SessionState, RaceState, Tyres, FlagColour, FlagReason,\
+    Sector
 import binio
 
 
@@ -197,17 +198,23 @@ class TelemetryPacket(Packet):
             p["lapsCompleted"] = p["lapsCompleted"] & 0x7F
 
             p["classSameAsPlayer"] = (p["sector"] & 0x08) > 0
-            p["sector"] = p["sector"] & 0x07
+            p["sector"] = Sector(p["sector"] & 0x07)
 
             self.participants.append(p)
 
         self.data.update(TelemetryPacket.EPILOGUE_STRUCTURE.read_dict(buf))
 
         # Unpack data
+        self.data["gameState"] = GameState(self.data["gameSessionState"] & 0x07)
+        self.data["sessionState"] = SessionState((self.data["gameSessionState"] & 0x38) >> 2)
+
         self.data["raceState"] = RaceState(self.data["raceStateFlags"] & 0x7)
         self.data["lapInvalidated"] = (self.data["raceStateFlags"] & 8) > 0
         self.data["antiLockActive"] = (self.data["raceStateFlags"] & 16) > 0
         self.data["boostActive"] = (self.data["raceStateFlags"] & 32) > 0
+
+        self.data["gear"] = self.data['gearNumGears'] & 0x0F
+        self.data["numGears"] = (self.data['gearNumGears'] & 0xF0) >> 4
 
         self.data["highestFlagColour"] = FlagColour(self.data["highestFlag"] & 0x7)
         self.data["highestFlagReason"] = FlagReason((self.data["highestFlag"] & 0xF0) << 4)
@@ -216,22 +223,6 @@ class TelemetryPacket(Packet):
         thisField = binio.new([datapoint])
         for i in Tyres:
             self.tyres[i.value][datapoint[2]] = thisField.read_dict(buf)[datapoint[2]]
-
-    @property
-    def gameState(self):
-        return GameState(self.data["gameSessionState"] & 0x07)
-
-    @property
-    def sessionState(self):
-        return SessionState((self.data["gameSessionState"] & 0x38) >> 2)
-
-    @property
-    def currentGear(self):
-        return self.data['gearNumGears'] & 0x0F
-
-    @property
-    def numGears(self):
-        return (self.data['gearNumGears'] & 0xF0) >> 4
 
     def getValue(self, key):
         return self.data[key]
