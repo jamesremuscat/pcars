@@ -1,4 +1,5 @@
 from pcars.packet import Packet
+from StringIO import StringIO
 from threading import Thread
 import socket
 import struct
@@ -28,7 +29,7 @@ class PCarsStreamReceiver(Thread):
         sock.setsockopt(socket.IPPROTO_IP, socket.IP_ADD_MEMBERSHIP, mreq)
 
         while True:
-            data = sock.recv()
-            packet = Packet.readFrom(data)
+            data = sock.recv(1400)
+            packet = Packet.readFrom(StringIO(data))
             for listener in self.listeners:
                 listener.handlePacket(packet)
