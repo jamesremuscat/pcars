@@ -1,5 +1,5 @@
 from pcars.enums import GameState, SessionState, RaceState, TyreFlags, FlagColour,\
-    Sector
+    Sector, PitMode, PitSchedule
 from pcars.packet import Packet, TelemetryPacket
 from StringIO import StringIO
 from unittest import TestCase
@@ -29,6 +29,9 @@ class TestPacket(TestCase):
 
         self.assertEqual(0, p.getValue("gear"))
         self.assertEqual(6, p.getValue("numGears"))
+
+        self.assertEqual(PitMode.NONE, p.getValue("pitMode"))
+        self.assertEqual(PitSchedule.NONE, p.getValue("pitSchedule"))
 
         self.assertEqual(TyreFlags.ATTACHED + TyreFlags.INFLATED + TyreFlags.IS_ON_GROUND, p.tyres[0]["tyreFlags"])
         self.assertEqual(0.0, p.tyres[1]["tyreRPS"])  # Hmm, we're stopped in the test data!

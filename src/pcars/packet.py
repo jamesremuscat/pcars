@@ -1,5 +1,5 @@
 from pcars.enums import GameState, SessionState, RaceState, Tyres, FlagColour, FlagReason,\
-    Sector
+    Sector, PitMode, PitSchedule
 import binio
 
 
@@ -215,6 +215,9 @@ class TelemetryPacket(Packet):
 
         self.data["gear"] = self.data['gearNumGears'] & 0x0F
         self.data["numGears"] = (self.data['gearNumGears'] & 0xF0) >> 4
+
+        self.data["pitMode"] = PitMode(self.data["pitModeSchedule"] & 0x07)
+        self.data["pitSchedule"] = PitSchedule((self.data["pitModeSchedule"] & 0xF0) << 4)
 
         self.data["highestFlagColour"] = FlagColour(self.data["highestFlag"] & 0x7)
         self.data["highestFlagReason"] = FlagReason((self.data["highestFlag"] & 0xF0) << 4)
