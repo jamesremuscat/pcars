@@ -196,6 +196,7 @@ class TelemetryPacket(Packet):
             p["lapInvalidated"] = (p["lapsCompleted"] & 0x80) >> 7
             p["lapsCompleted"] = p["lapsCompleted"] & 0x7F
 
+            p["classSameAsPlayer"] = (p["sector"] & 0x08) > 0
             p["sector"] = p["sector"] & 0x07
 
             self.participants.append(p)
