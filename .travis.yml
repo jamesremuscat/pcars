@@ -4,6 +4,6 @@ python:
 install:
   - pip install coveralls
 script:
-  coverage run --source=pcars setup.py nosetests
+  coverage run --source=src --omit=*/test/* setup.py nosetests
 after_success:
   coveralls
