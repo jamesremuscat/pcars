@@ -1,9 +1,10 @@
 from pcars.enums import GameState, SessionState, RaceState, TyreFlags, FlagColour,\
     Sector, PitMode, PitSchedule
 from pcars.packet import Packet, TelemetryPacket
-from StringIO import StringIO
+from io import BytesIO
 from unittest import TestCase
 import os
+
 
 __location__ = os.path.realpath(os.path.join(os.getcwd(), os.path.dirname(__file__)))
 
@@ -11,7 +12,7 @@ __location__ = os.path.realpath(os.path.join(os.getcwd(), os.path.dirname(__file
 class TestPacket(TestCase):
 
     def testParsePacketHeader(self):
-        p = Packet.readFrom(StringIO('\xd2\x04\x01'))
+        p = Packet.readFrom(BytesIO(b"\xd2\x04\x01"))
         self.assertEqual(1234, p.buildVersion)
         self.assertEqual(1, p.packetType)
 

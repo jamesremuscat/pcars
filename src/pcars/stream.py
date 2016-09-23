@@ -1,9 +1,8 @@
 from pcars.packet import Packet
-from StringIO import StringIO
+from io import BytesIO
 from threading import Thread
 import socket
 import struct
-
 
 MCAST_ANY = "224.0.0.1"
 
@@ -30,6 +29,6 @@ class PCarsStreamReceiver(Thread):
 
         while True:
             data = sock.recv(1400)
-            packet = Packet.readFrom(StringIO(data))
+            packet = Packet.readFrom(BytesIO(data))
             for listener in self.listeners:
                 listener.handlePacket(packet)
