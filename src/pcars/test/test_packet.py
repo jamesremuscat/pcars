@@ -11,9 +11,9 @@ __location__ = os.path.realpath(os.path.join(os.getcwd(), os.path.dirname(__file
 class TestPacket(TestCase):
 
     def testParsePacketHeader(self):
-        p = Packet.readFrom(StringIO('\xd2\x04\x01'))
+        p = Packet.readFrom(StringIO('\xd2\x04\x03'))
         self.assertEqual(1234, p.buildVersion)
-        self.assertEqual(1, p.packetType)
+        self.assertEqual(3, p.packetType)
 
     def testParseSamplePacket0(self):
         f = open(os.path.join(__location__, "packet_0.bin"), 'rb')
