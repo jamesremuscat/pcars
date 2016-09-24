@@ -230,6 +230,47 @@ class TelemetryPacket(Packet):
     def getValue(self, key):
         return self.data[key]
 
+
+"""
+NOTE: If there are less than 16 participants in a race the name and
+      fastestLapTime fields may contain old data from a previouse
+      race.
+
+      Use numParticipants from TelemetryPacket to work out how many
+      participants there are.
+
+"""
+class ParticipantInfoStringsPacket(Packet):
+
+    STRUCTURE = binio.new([
+        (64, binio.types.t_char, "carName"),
+        (64, binio.types.t_char, "carClassName"),
+        (64, binio.types.t_char, "trackLocation"),
+        (64, binio.types.t_char, "trackVariation"),
+    ])
+
+    NAME_STRUCTURE = binio.new([(64, binio.types.t_char, "name")])
+
+    FASTEST_LAP_TIME_STRUCTURE = binio.new([(1, binio.types.t_float32, "fastestLapTime")])
+
+
+    def __init__(self, buildVersion, sequenceNumber, packetType, buf):
+        super(ParticipantInfoStringsPacket, self).__init__(buildVersion, sequenceNumber, packetType, buf)
+        self.participants = []
+
+        for _ in range(0, 16):
+            p = ParticipantInfoStringsPacket.NAME_STRUCTURE.read_dict(buf)
+            self.participants.append(p)
+
+        for _ in range(0, 16):
+            p = ParticipantInfoStringsPacket.FASTEST_LAP_TIME_STRUCTURE.read_dict(buf)
+            self.participants[_]["fastestLapTime"] = p["fastestLapTime"]
+
+    def getValue(self, key):
+        return self.data[key]
+
+
 PACKET_TYPES = {
-    0: TelemetryPacket
+    0: TelemetryPacket,
+    1: ParticipantInfoStringsPacket,
 }
