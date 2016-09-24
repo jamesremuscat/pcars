@@ -206,7 +206,7 @@ class TelemetryPacket(Packet):
 
         # Unpack data
         self.data["gameState"] = GameState(self.data["gameSessionState"] & 0x07)
-        self.data["sessionState"] = SessionState((self.data["gameSessionState"] & 0x38) >> 2)
+        self.data["sessionState"] = SessionState(self.data["gameSessionState"] >> 4)
 
         self.data["raceState"] = RaceState(self.data["raceStateFlags"] & 0x7)
         self.data["lapInvalidated"] = (self.data["raceStateFlags"] & 8) > 0
