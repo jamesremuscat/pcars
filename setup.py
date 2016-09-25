@@ -1,5 +1,6 @@
 from setuptools import setup, find_packages
 import re
+import sys
 
 VERSIONFILE = "src/pcars/_version.py"
 verstr = "unknown"
@@ -12,6 +13,10 @@ try:
 except EnvironmentError:
     print("unable to find version in %s" % (VERSIONFILE,))
     raise RuntimeError("if %s exists, it is required to be well-formed" % (VERSIONFILE,))
+
+install_requires = ["binio"]
+if sys.version_info < (3, 4):
+    install_requires.append("enum34")
 
 setup(
     name='pcars',
@@ -27,7 +32,7 @@ setup(
       """,
     setup_requires=["nose>=1.0"],
     tests_require=[],
-    install_requires=['binio', 'enum34'],
+    install_requires=install_requires,
     entry_points={
         'console_scripts': [
             ],
