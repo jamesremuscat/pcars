@@ -24,9 +24,9 @@ class Packet(object):
     @staticmethod
     def readFrom(buf):
         header = Packet.HEADER.read_dict(buf)
-        buildVersion = header['buildVersion']
-        sequenceNumber = (header['seq_packet'] & 0xFC) >> 2
-        packetType = header['seq_packet'] & 0x3
+        buildVersion = header["buildVersion"]
+        sequenceNumber = (header["seq_packet"] & 0xFC) >> 2
+        packetType = header["seq_packet"] & 0x3
         pClass = PACKET_TYPES.get(packetType, Packet)
         return pClass(buildVersion, sequenceNumber, packetType, buf)
 
@@ -213,8 +213,8 @@ class TelemetryPacket(Packet):
         self.data["antiLockActive"] = (self.data["raceStateFlags"] & 16) > 0
         self.data["boostActive"] = (self.data["raceStateFlags"] & 32) > 0
 
-        self.data["gear"] = self.data['gearNumGears'] & 0x0F
-        self.data["numGears"] = (self.data['gearNumGears'] & 0xF0) >> 4
+        self.data["gear"] = self.data["gearNumGears"] & 0x0F
+        self.data["numGears"] = (self.data["gearNumGears"] & 0xF0) >> 4
 
         self.data["pitMode"] = PitMode(self.data["pitModeSchedule"] & 0x07)
         self.data["pitSchedule"] = PitSchedule((self.data["pitModeSchedule"] & 0xF0) << 4)

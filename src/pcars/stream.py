@@ -4,7 +4,8 @@ from threading import Thread
 import socket
 import struct
 
-MCAST_ANY = "224.0.0.1"
+
+_MCAST_ANY = "224.0.0.1"
 
 
 class PCarsStreamReceiver(Thread):
@@ -22,8 +23,8 @@ class PCarsStreamReceiver(Thread):
         sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
 
         # Bind to the server address
-        sock.bind(('', self.port))
-        group = socket.inet_aton(MCAST_ANY)
+        sock.bind(("", self.port))
+        group = socket.inet_aton(_MCAST_ANY)
         mreq = struct.pack("4sL", group, socket.INADDR_ANY)
         sock.setsockopt(socket.IPPROTO_IP, socket.IP_ADD_MEMBERSHIP, mreq)
 
