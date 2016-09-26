@@ -22,7 +22,7 @@ class TestPacket(TestCase):
         self.assertEqual(1122, p.buildVersion)
         self.assertEqual(0, p.packetType)
         self.assertEqual(0, p.sequenceNumber)
-        self.assertEqual(SessionState.FORMATION_LAP, p.getValue("sessionState"))
+        self.assertEqual(SessionState.RACE, p.getValue("sessionState"))
         self.assertEqual(GameState.INGAME_PLAYING, p.getValue("gameState"))
         self.assertEqual(0, p.getValue("viewedParticipantIndex"))
         self.assertEqual(21, p.getValue("numParticipants"))
