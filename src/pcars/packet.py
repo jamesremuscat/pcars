@@ -3,15 +3,12 @@ from pcars.enums import GameState, SessionState, RaceState, Tyres, FlagColour, F
 import binio
 
 
-PACKET_HEADER = [
-    (1, binio.types.t_u16, "buildVersion"),
-    (1, binio.types.t_u8, "seq_packet"),
-]
-
-
 class Packet(object):
 
-    HEADER = binio.new(PACKET_HEADER)
+    HEADER = binio.new([
+        (1, binio.types.t_u16, "buildVersion"),
+        (1, binio.types.t_u8, "seq_packet"),
+    ])
 
     def __init__(self, buildVersion, sequenceNumber, packetType, buf):
         self.buildVersion = buildVersion
@@ -175,7 +172,6 @@ class TelemetryPacket(Packet):
         (1, binio.types.t_u8, "wings1"),
         (1, binio.types.t_u8, "wings2"),
         (1, binio.types.t_u8, "dPad"),
-        #(1, binio.types.t_u16, "padding")
     ])
 
     def __init__(self, buildVersion, sequenceNumber, packetType, buf):
@@ -253,7 +249,6 @@ class ParticipantInfoStringsPacket(Packet):
     NAME_STRUCTURE = binio.new([(64, binio.types.t_char, "name")])
 
     FASTEST_LAP_TIME_STRUCTURE = binio.new([(1, binio.types.t_float32, "fastestLapTime")])
-
 
     def __init__(self, buildVersion, sequenceNumber, packetType, buf):
         super(ParticipantInfoStringsPacket, self).__init__(buildVersion, sequenceNumber, packetType, buf)
