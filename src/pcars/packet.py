@@ -17,9 +17,10 @@ class Packet(object):
         self.buildVersion = buildVersion
         self.sequenceNumber = sequenceNumber
         self.packetType = packetType
-        self.data = {}
         if hasattr(self.__class__, "STRUCTURE"):
-            self.data = self.__class__.STRUCTURE.read_dict(buf)
+            self._data = self.__class__.STRUCTURE.read_dict(buf)
+        else:
+            self._data = {}
 
     @staticmethod
     def readFrom(buf):
@@ -179,14 +180,14 @@ class TelemetryPacket(Packet):
 
     def __init__(self, buildVersion, sequenceNumber, packetType, buf):
         super(TelemetryPacket, self).__init__(buildVersion, sequenceNumber, packetType, buf)  # everything up to tyre information
-        self.tyres = [{}, {}, {}, {}]
+        self._data["tyres"] = [{}, {}, {}, {}]
 
         for datapoint in TelemetryPacket.TYRES_STRUCTURE:
-            self.forEachTyre(datapoint, buf)
+            self._forEachTyre(datapoint, buf)
 
-        self.data.update(TelemetryPacket.EXTRAS_WEATHER_STRUCTURE.read_dict(buf))
+        self._data.update(TelemetryPacket.EXTRAS_WEATHER_STRUCTURE.read_dict(buf))
 
-        self.participants = []
+        self._data["participants"] = []
 
         for _ in range(0, 56):
             p = TelemetryPacket.PARTICIPANT_INFO_STRUCTURE.read_dict(buf)
@@ -200,35 +201,35 @@ class TelemetryPacket(Packet):
             p["classSameAsPlayer"] = (p["sector"] & 0x08) > 0
             p["sector"] = Sector(p["sector"] & 0x07)
 
-            self.participants.append(p)
+            self._data["participants"].append(p)
 
-        self.data.update(TelemetryPacket.EPILOGUE_STRUCTURE.read_dict(buf))
+        self._data.update(TelemetryPacket.EPILOGUE_STRUCTURE.read_dict(buf))
 
         # Unpack data
-        self.data["gameState"] = GameState(self.data["gameSessionState"] & 0x07)
-        self.data["sessionState"] = SessionState(self.data["gameSessionState"] >> 4)
+        self._data["gameState"] = GameState(self._data["gameSessionState"] & 0x07)
+        self._data["sessionState"] = SessionState(self._data["gameSessionState"] >> 4)
 
-        self.data["raceState"] = RaceState(self.data["raceStateFlags"] & 0x7)
-        self.data["lapInvalidated"] = (self.data["raceStateFlags"] & 8) > 0
-        self.data["antiLockActive"] = (self.data["raceStateFlags"] & 16) > 0
-        self.data["boostActive"] = (self.data["raceStateFlags"] & 32) > 0
+        self._data["raceState"] = RaceState(self._data["raceStateFlags"] & 0x7)
+        self._data["lapInvalidated"] = (self._data["raceStateFlags"] & 8) > 0
+        self._data["antiLockActive"] = (self._data["raceStateFlags"] & 16) > 0
+        self._data["boostActive"] = (self._data["raceStateFlags"] & 32) > 0
 
-        self.data["gear"] = self.data["gearNumGears"] & 0x0F
-        self.data["numGears"] = (self.data["gearNumGears"] & 0xF0) >> 4
+        self._data["gear"] = self._data["gearNumGears"] & 0x0F
+        self._data["numGears"] = (self._data["gearNumGears"] & 0xF0) >> 4
 
-        self.data["pitMode"] = PitMode(self.data["pitModeSchedule"] & 0x07)
-        self.data["pitSchedule"] = PitSchedule((self.data["pitModeSchedule"] & 0xF0) << 4)
+        self._data["pitMode"] = PitMode(self._data["pitModeSchedule"] & 0x07)
+        self._data["pitSchedule"] = PitSchedule((self._data["pitModeSchedule"] & 0xF0) << 4)
 
-        self.data["highestFlagColour"] = FlagColour(self.data["highestFlag"] & 0x7)
-        self.data["highestFlagReason"] = FlagReason((self.data["highestFlag"] & 0xF0) << 4)
+        self._data["highestFlagColour"] = FlagColour(self._data["highestFlag"] & 0x7)
+        self._data["highestFlagReason"] = FlagReason((self._data["highestFlag"] & 0xF0) << 4)
 
-    def forEachTyre(self, datapoint, buf):
+    def _forEachTyre(self, datapoint, buf):
         thisField = binio.new([datapoint])
         for i in Tyres:
-            self.tyres[i.value][datapoint[2]] = thisField.read_dict(buf)[datapoint[2]]
+            self._data["tyres"][i.value][datapoint[2]] = thisField.read_dict(buf)[datapoint[2]]
 
-    def getValue(self, key):
-        return self.data[key]
+    def __getitem__(self, key):
+        return self._data[key]
 
 
 """
@@ -258,24 +259,24 @@ class ParticipantInfoStringsPacket(Packet):
         super(ParticipantInfoStringsPacket, self).__init__(buildVersion, sequenceNumber, packetType, buf)
 
         # Strip junk from strings after the null character.
-        self.data["carName"] = self.data["carName"].split("\x00")[0]
-        self.data["carClassName"] = self.data["carClassName"].split("\x00")[0]
-        self.data["trackLocation"] = self.data["trackLocation"].split("\x00")[0]
-        self.data["trackVariation"] = self.data["trackVariation"].split("\x00")[0]
+        self._data["carName"] = self._data["carName"].split("\x00")[0]
+        self._data["carClassName"] = self._data["carClassName"].split("\x00")[0]
+        self._data["trackLocation"] = self._data["trackLocation"].split("\x00")[0]
+        self._data["trackVariation"] = self._data["trackVariation"].split("\x00")[0]
 
-        self.participants = []
+        self._data["participants"] = []
 
         for _ in range(0, 16):
             p = ParticipantInfoStringsPacket.NAME_STRUCTURE.read_dict(buf)
             p["name"] = p["name"].split("\x00")[0]  # Strip junk from strings after the null character.
-            self.participants.append(p)
+            self._data["participants"].append(p)
 
         for _ in range(0, 16):
             p = ParticipantInfoStringsPacket.FASTEST_LAP_TIME_STRUCTURE.read_dict(buf)
-            self.participants[_]["fastestLapTime"] = p["fastestLapTime"]
+            self._data["participants"][_]["fastestLapTime"] = p["fastestLapTime"]
 
-    def getValue(self, key):
-        return self.data[key]
+    def __getitem__(self, key):
+        return self._data[key]
 
 
 class ParticipantInfoStringsAdditionalPacket(Packet):
@@ -287,15 +288,15 @@ class ParticipantInfoStringsAdditionalPacket(Packet):
     def __init__(self, buildVersion, sequenceNumber, packetType, buf):
         super(ParticipantInfoStringsAdditionalPacket, self).__init__(buildVersion, sequenceNumber, packetType, buf)
 
-        self.participants = []
+        self._data["participants"] = []
 
         for _ in range(0, 16):
             p = ParticipantInfoStringsAdditionalPacket.NAME_STRUCTURE.read_dict(buf)
             p["name"] = p["name"].split("\x00")[0]  # Strip junk from strings after the null character.
-            self.participants.append(p)
+            self._data["participants"].append(p)
 
-    def getValue(self, key):
-        return self.data[key]
+    def __getitem__(self, key):
+        return self._data[key]
 
 
 PACKET_TYPES = {
