@@ -278,7 +278,28 @@ class ParticipantInfoStringsPacket(Packet):
         return self.data[key]
 
 
+class ParticipantInfoStringsAdditionalPacket(Packet):
+
+    STRUCTURE = binio.new([(1, binio.types.t_u8, "offset")])
+
+    NAME_STRUCTURE = binio.new([(64, binio.types.t_char, "name")])
+
+    def __init__(self, buildVersion, sequenceNumber, packetType, buf):
+        super(ParticipantInfoStringsAdditionalPacket, self).__init__(buildVersion, sequenceNumber, packetType, buf)
+
+        self.participants = []
+
+        for _ in range(0, 16):
+            p = ParticipantInfoStringsAdditionalPacket.NAME_STRUCTURE.read_dict(buf)
+            p["name"] = p["name"].split("\x00")[0]  # Strip junk from strings after the null character.
+            self.participants.append(p)
+
+    def getValue(self, key):
+        return self.data[key]
+
+
 PACKET_TYPES = {
     0: TelemetryPacket,
     1: ParticipantInfoStringsPacket,
+    2: ParticipantInfoStringsAdditionalPacket,
 }
