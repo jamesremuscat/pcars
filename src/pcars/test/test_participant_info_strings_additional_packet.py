@@ -24,4 +24,12 @@ class TestParticipantInfoStringsAdditionalPacket(TestCase):
         # Participants
         self.assertEqual(16, len(p["participants"]))
         self.assertEqual("Abdullah El Khereiji", p["participants"][0]["name"])
-        self.assertEqual("Dominic Sch\\xf6nberner", p["participants"][15]["name"])
+
+        try:
+            # Python 2
+            expect_name = unicode("Dominic Schnberner")
+        except NameError:
+            # Python 3
+            expect_name = "Dominic Sch\udcf6nberner"
+
+        self.assertEqual(expect_name, p["participants"][15]["name"])

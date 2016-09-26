@@ -19,6 +19,18 @@ class Packet(object):
         else:
             self._data = {}
 
+    def _convertString(self, stringAsBytes):
+        # Convert to utf-8 and strip junk from strings after the null character.
+
+        try:
+            # Python 2
+            convertedValue = unicode(stringAsBytes, encoding='utf-8', errors='ignore')
+        except NameError:
+            # Python 3
+            convertedValue = str(stringAsBytes, encoding='utf-8', errors='surrogateescape')
+
+        return convertedValue.rstrip('\x00')
+
     @staticmethod
     def readFrom(buf):
         header = Packet.HEADER.read_dict(buf)
@@ -240,30 +252,29 @@ NOTE: If there are less than 16 participants in a race the name and
 class ParticipantInfoStringsPacket(Packet):
 
     STRUCTURE = binio.new([
-        (64, binio.types.t_char, "carName"),
-        (64, binio.types.t_char, "carClassName"),
-        (64, binio.types.t_char, "trackLocation"),
-        (64, binio.types.t_char, "trackVariation"),
+        (64, binio.types.t_byte, "carName"),
+        (64, binio.types.t_byte, "carClassName"),
+        (64, binio.types.t_byte, "trackLocation"),
+        (64, binio.types.t_byte, "trackVariation"),
     ])
 
-    NAME_STRUCTURE = binio.new([(64, binio.types.t_char, "name")])
+    NAME_STRUCTURE = binio.new([(64, binio.types.t_byte, "name")])
 
     FASTEST_LAP_TIME_STRUCTURE = binio.new([(1, binio.types.t_float32, "fastestLapTime")])
 
     def __init__(self, buildVersion, sequenceNumber, packetType, buf):
         super(ParticipantInfoStringsPacket, self).__init__(buildVersion, sequenceNumber, packetType, buf)
 
-        # Strip junk from strings after the null character.
-        self._data["carName"] = self._data["carName"].split("\x00")[0]
-        self._data["carClassName"] = self._data["carClassName"].split("\x00")[0]
-        self._data["trackLocation"] = self._data["trackLocation"].split("\x00")[0]
-        self._data["trackVariation"] = self._data["trackVariation"].split("\x00")[0]
+        self._data["carName"] = self._convertString(self._data["carName"])
+        self._data["carClassName"] = self._convertString(self._data["carClassName"])
+        self._data["trackLocation"] = self._convertString(self._data["trackLocation"])
+        self._data["trackVariation"] = self._convertString(self._data["trackVariation"])
 
         self._data["participants"] = []
 
         for _ in range(0, 16):
             p = ParticipantInfoStringsPacket.NAME_STRUCTURE.read_dict(buf)
-            p["name"] = p["name"].split("\x00")[0]  # Strip junk from strings after the null character.
+            p["name"] = self._convertString(p["name"])
             self._data["participants"].append(p)
 
         for _ in range(0, 16):
@@ -278,7 +289,7 @@ class ParticipantInfoStringsAdditionalPacket(Packet):
 
     STRUCTURE = binio.new([(1, binio.types.t_u8, "offset")])
 
-    NAME_STRUCTURE = binio.new([(64, binio.types.t_char, "name")])
+    NAME_STRUCTURE = binio.new([(64, binio.types.t_byte, "name")])
 
     def __init__(self, buildVersion, sequenceNumber, packetType, buf):
         super(ParticipantInfoStringsAdditionalPacket, self).__init__(buildVersion, sequenceNumber, packetType, buf)
@@ -287,7 +298,7 @@ class ParticipantInfoStringsAdditionalPacket(Packet):
 
         for _ in range(0, 16):
             p = ParticipantInfoStringsAdditionalPacket.NAME_STRUCTURE.read_dict(buf)
-            p["name"] = p["name"].split("\x00")[0]  # Strip junk from strings after the null character.
+            p["name"] = self._convertString(p["name"])
             self._data["participants"].append(p)
 
     def __getitem__(self, key):
