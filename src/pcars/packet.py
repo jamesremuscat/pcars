@@ -256,10 +256,18 @@ class ParticipantInfoStringsPacket(Packet):
 
     def __init__(self, buildVersion, sequenceNumber, packetType, buf):
         super(ParticipantInfoStringsPacket, self).__init__(buildVersion, sequenceNumber, packetType, buf)
+
+        # Strip junk from strings after the null character.
+        self.data["carName"] = self.data["carName"].split("\x00")[0]
+        self.data["carClassName"] = self.data["carClassName"].split("\x00")[0]
+        self.data["trackLocation"] = self.data["trackLocation"].split("\x00")[0]
+        self.data["trackVariation"] = self.data["trackVariation"].split("\x00")[0]
+
         self.participants = []
 
         for _ in range(0, 16):
             p = ParticipantInfoStringsPacket.NAME_STRUCTURE.read_dict(buf)
+            p["name"] = p["name"].split("\x00")[0]  # Strip junk from strings after the null character.
             self.participants.append(p)
 
         for _ in range(0, 16):
