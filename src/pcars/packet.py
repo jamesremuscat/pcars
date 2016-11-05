@@ -3,23 +3,33 @@ from pcars.enums import GameState, SessionState, RaceState, Tyres, FlagColour, F
 import binio
 
 
-PACKET_HEADER = [
-    (1, binio.types.t_u16, "buildVersion"),
-    (1, binio.types.t_u8, "seq_packet"),
-]
-
-
 class Packet(object):
 
-    HEADER = binio.new(PACKET_HEADER)
+    HEADER = binio.new([
+        (1, binio.types.t_u16, "buildVersion"),
+        (1, binio.types.t_u8, "seq_packet"),
+    ])
 
     def __init__(self, buildVersion, sequenceNumber, packetType, buf):
         self.buildVersion = buildVersion
         self.sequenceNumber = sequenceNumber
         self.packetType = packetType
-        self.data = {}
         if hasattr(self.__class__, "STRUCTURE"):
-            self.data = self.__class__.STRUCTURE.read_dict(buf)
+            self._data = self.__class__.STRUCTURE.read_dict(buf)
+        else:
+            self._data = {}
+
+    def _convertString(self, stringAsBytes):
+        # Convert to utf-8 and strip junk from strings after the null character.
+
+        try:
+            # Python 2
+            convertedValue = unicode(stringAsBytes, encoding='utf-8', errors='ignore')
+        except NameError:
+            # Python 3
+            convertedValue = str(stringAsBytes, encoding='utf-8', errors='surrogateescape')
+
+        return convertedValue.rstrip('\x00')
 
     @staticmethod
     def readFrom(buf):
@@ -174,19 +184,18 @@ class TelemetryPacket(Packet):
         (1, binio.types.t_u8, "wings1"),
         (1, binio.types.t_u8, "wings2"),
         (1, binio.types.t_u8, "dPad"),
-        #(1, binio.types.t_u16, "padding")
     ])
 
     def __init__(self, buildVersion, sequenceNumber, packetType, buf):
         super(TelemetryPacket, self).__init__(buildVersion, sequenceNumber, packetType, buf)  # everything up to tyre information
-        self.tyres = [{}, {}, {}, {}]
+        self._data["tyres"] = [{}, {}, {}, {}]
 
         for datapoint in TelemetryPacket.TYRES_STRUCTURE:
-            self.forEachTyre(datapoint, buf)
+            self._forEachTyre(datapoint, buf)
 
-        self.data.update(TelemetryPacket.EXTRAS_WEATHER_STRUCTURE.read_dict(buf))
+        self._data.update(TelemetryPacket.EXTRAS_WEATHER_STRUCTURE.read_dict(buf))
 
-        self.participants = []
+        self._data["participants"] = []
 
         for _ in range(0, 56):
             p = TelemetryPacket.PARTICIPANT_INFO_STRUCTURE.read_dict(buf)
@@ -200,35 +209,35 @@ class TelemetryPacket(Packet):
             p["classSameAsPlayer"] = (p["sector"] & 0x08) > 0
             p["sector"] = Sector(p["sector"] & 0x07)
 
-            self.participants.append(p)
+            self._data["participants"].append(p)
 
-        self.data.update(TelemetryPacket.EPILOGUE_STRUCTURE.read_dict(buf))
+        self._data.update(TelemetryPacket.EPILOGUE_STRUCTURE.read_dict(buf))
 
         # Unpack data
-        self.data["gameState"] = GameState(self.data["gameSessionState"] & 0x07)
-        self.data["sessionState"] = SessionState(self.data["gameSessionState"] >> 4)
+        self._data["gameState"] = GameState(self._data["gameSessionState"] & 0x07)
+        self._data["sessionState"] = SessionState(self._data["gameSessionState"] >> 4)
 
-        self.data["raceState"] = RaceState(self.data["raceStateFlags"] & 0x7)
-        self.data["lapInvalidated"] = (self.data["raceStateFlags"] & 8) > 0
-        self.data["antiLockActive"] = (self.data["raceStateFlags"] & 16) > 0
-        self.data["boostActive"] = (self.data["raceStateFlags"] & 32) > 0
+        self._data["raceState"] = RaceState(self._data["raceStateFlags"] & 0x7)
+        self._data["lapInvalidated"] = (self._data["raceStateFlags"] & 8) > 0
+        self._data["antiLockActive"] = (self._data["raceStateFlags"] & 16) > 0
+        self._data["boostActive"] = (self._data["raceStateFlags"] & 32) > 0
 
-        self.data["gear"] = self.data["gearNumGears"] & 0x0F
-        self.data["numGears"] = (self.data["gearNumGears"] & 0xF0) >> 4
+        self._data["gear"] = self._data["gearNumGears"] & 0x0F
+        self._data["numGears"] = (self._data["gearNumGears"] & 0xF0) >> 4
 
-        self.data["pitMode"] = PitMode(self.data["pitModeSchedule"] & 0x07)
-        self.data["pitSchedule"] = PitSchedule((self.data["pitModeSchedule"] & 0xF0) << 4)
+        self._data["pitMode"] = PitMode(self._data["pitModeSchedule"] & 0x07)
+        self._data["pitSchedule"] = PitSchedule((self._data["pitModeSchedule"] & 0xF0) << 4)
 
-        self.data["highestFlagColour"] = FlagColour(self.data["highestFlag"] & 0x7)
-        self.data["highestFlagReason"] = FlagReason((self.data["highestFlag"] & 0xF0) << 4)
+        self._data["highestFlagColour"] = FlagColour(self._data["highestFlag"] & 0x7)
+        self._data["highestFlagReason"] = FlagReason((self._data["highestFlag"] & 0xF0) << 4)
 
-    def forEachTyre(self, datapoint, buf):
+    def _forEachTyre(self, datapoint, buf):
         thisField = binio.new([datapoint])
         for i in Tyres:
-            self.tyres[i.value][datapoint[2]] = thisField.read_dict(buf)[datapoint[2]]
+            self._data["tyres"][i.value][datapoint[2]] = thisField.read_dict(buf)[datapoint[2]]
 
-    def getValue(self, key):
-        return self.data[key]
+    def __getitem__(self, key):
+        return self._data[key]
 
 
 """
@@ -243,34 +252,61 @@ NOTE: If there are less than 16 participants in a race the name and
 class ParticipantInfoStringsPacket(Packet):
 
     STRUCTURE = binio.new([
-        (64, binio.types.t_char, "carName"),
-        (64, binio.types.t_char, "carClassName"),
-        (64, binio.types.t_char, "trackLocation"),
-        (64, binio.types.t_char, "trackVariation"),
+        (64, binio.types.t_byte, "carName"),
+        (64, binio.types.t_byte, "carClassName"),
+        (64, binio.types.t_byte, "trackLocation"),
+        (64, binio.types.t_byte, "trackVariation"),
     ])
 
-    NAME_STRUCTURE = binio.new([(64, binio.types.t_char, "name")])
+    NAME_STRUCTURE = binio.new([(64, binio.types.t_byte, "name")])
 
     FASTEST_LAP_TIME_STRUCTURE = binio.new([(1, binio.types.t_float32, "fastestLapTime")])
 
-
     def __init__(self, buildVersion, sequenceNumber, packetType, buf):
         super(ParticipantInfoStringsPacket, self).__init__(buildVersion, sequenceNumber, packetType, buf)
-        self.participants = []
+
+        self._data["carName"] = self._convertString(self._data["carName"])
+        self._data["carClassName"] = self._convertString(self._data["carClassName"])
+        self._data["trackLocation"] = self._convertString(self._data["trackLocation"])
+        self._data["trackVariation"] = self._convertString(self._data["trackVariation"])
+
+        self._data["participants"] = []
 
         for _ in range(0, 16):
             p = ParticipantInfoStringsPacket.NAME_STRUCTURE.read_dict(buf)
-            self.participants.append(p)
+            p["name"] = self._convertString(p["name"])
+            self._data["participants"].append(p)
 
         for _ in range(0, 16):
             p = ParticipantInfoStringsPacket.FASTEST_LAP_TIME_STRUCTURE.read_dict(buf)
-            self.participants[_]["fastestLapTime"] = p["fastestLapTime"]
+            self._data["participants"][_]["fastestLapTime"] = p["fastestLapTime"]
 
-    def getValue(self, key):
-        return self.data[key]
+    def __getitem__(self, key):
+        return self._data[key]
+
+
+class ParticipantInfoStringsAdditionalPacket(Packet):
+
+    STRUCTURE = binio.new([(1, binio.types.t_u8, "offset")])
+
+    NAME_STRUCTURE = binio.new([(64, binio.types.t_byte, "name")])
+
+    def __init__(self, buildVersion, sequenceNumber, packetType, buf):
+        super(ParticipantInfoStringsAdditionalPacket, self).__init__(buildVersion, sequenceNumber, packetType, buf)
+
+        self._data["participants"] = []
+
+        for _ in range(0, 16):
+            p = ParticipantInfoStringsAdditionalPacket.NAME_STRUCTURE.read_dict(buf)
+            p["name"] = self._convertString(p["name"])
+            self._data["participants"].append(p)
+
+    def __getitem__(self, key):
+        return self._data[key]
 
 
 PACKET_TYPES = {
     0: TelemetryPacket,
     1: ParticipantInfoStringsPacket,
+    2: ParticipantInfoStringsAdditionalPacket,
 }

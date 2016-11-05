@@ -19,13 +19,13 @@ class TestParticipantInfoStringsPacket(TestCase):
         self.assertEqual(8, p.sequenceNumber)
 
         # Packet Data
-        self.assertEqual("Mitsubishi Lancer Evolution X FQ400", p.getValue("carName"))
-        self.assertEqual("Road C1", p.getValue("carClassName"))
-        self.assertEqual("Cadwell", p.getValue("trackLocation"))
-        self.assertEqual("Woodland", p.getValue("trackVariation"))
+        self.assertEqual("Mitsubishi Lancer Evolution X FQ400", p["carName"])
+        self.assertEqual("Road C1", p["carClassName"])
+        self.assertEqual("Cadwell", p["trackLocation"])
+        self.assertEqual("Woodland", p["trackVariation"])
 
         # Participants
-        self.assertEqual(16, len(p.participants))
-        participant0 = p.participants[0]
+        self.assertEqual(16, len(p["participants"]))
+        participant0 = p["participants"][0]
         self.assertEqual("Andrew", participant0["name"])
         self.assertAlmostEqual(62.403419494628906, participant0["fastestLapTime"])
