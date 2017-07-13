@@ -6,3 +6,22 @@
 ## INTRODUCTION
 
 pcars is a Python client for the Project CARS UDP data stream.
+
+## Quickstart
+
+```python
+from pcars.stream import PCarsStreamReceiver
+
+class MyPCarsListener(object):
+    def handlePacket(data):
+        # You probably want to do something more exciting here
+        # You probably also want to switch on data.packetType
+        # See listings in packet.py for packet types and available fields for each
+        print data
+
+
+listener = MyPCarsListener()
+stream = PCarsStreamReceiver()
+stream.addListener(listener)
+stream.start()
+```
