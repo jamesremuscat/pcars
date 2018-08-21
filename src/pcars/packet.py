@@ -24,10 +24,10 @@ class Packet(object):
 
         try:
             # Python 2
-            convertedValue = unicode(stringAsBytes, encoding='utf-8', errors='ignore')
+            convertedValue = unicode(stringAsBytes, encoding='iso_8859_1', errors='ignore')
         except NameError:
             # Python 3
-            convertedValue = str(stringAsBytes, encoding='utf-8', errors='surrogateescape')
+            convertedValue = str(stringAsBytes, encoding='iso_8859_1', errors='surrogateescape')
 
         return convertedValue.rstrip('\x00')
 
