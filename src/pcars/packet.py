@@ -29,7 +29,7 @@ class Packet(object):
             # Python 3
             convertedValue = str(stringAsBytes, encoding='iso_8859_1', errors='surrogateescape')
 
-        return convertedValue.rstrip('\x00')
+        return convertedValue[:convertedValue.index('\x00')]
 
     @staticmethod
     def readFrom(buf):
