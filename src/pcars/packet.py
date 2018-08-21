@@ -226,10 +226,10 @@ class TelemetryPacket(Packet):
         self._data["numGears"] = (self._data["gearNumGears"] & 0xF0) >> 4
 
         self._data["pitMode"] = PitMode(self._data["pitModeSchedule"] & 0x07)
-        self._data["pitSchedule"] = PitSchedule((self._data["pitModeSchedule"] & 0xF0) << 4)
+        self._data["pitSchedule"] = PitSchedule((self._data["pitModeSchedule"] & 0xF0) >> 4)
 
         self._data["highestFlagColour"] = FlagColour(self._data["highestFlag"] & 0x7)
-        self._data["highestFlagReason"] = FlagReason((self._data["highestFlag"] & 0xF0) << 4)
+        self._data["highestFlagReason"] = FlagReason((self._data["highestFlag"] & 0xF0) >> 4)
 
     def _forEachTyre(self, datapoint, buf):
         thisField = binio.new([datapoint])
